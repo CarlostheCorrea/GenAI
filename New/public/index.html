@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Essay Grader</title>
+    <style>
+      :root {
+        --bg: #f7f5ef;
+        --panel: #fffdf8;
+        --ink: #1a1f16;
+        --muted: #5a6553;
+        --accent: #125b50;
+        --accent-2: #e98f3c;
+        --border: #d8d3c8;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 12% 8%, #f4e8cd 0%, transparent 40%),
+          radial-gradient(circle at 85% 10%, #d8ede6 0%, transparent 35%),
+          var(--bg);
+        color: var(--ink);
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 32px auto;
+        padding: 0 16px 32px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 28px;
+        letter-spacing: 0.2px;
+      }
+      p {
+        margin: 8px 0 14px;
+        color: var(--muted);
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+      input, select, button {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+      button {
+        border: 0;
+        background: var(--accent);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:hover { filter: brightness(1.04); }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .results {
+        margin-top: 16px;
+        display: grid;
+        gap: 12px;
+      }
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        background: #fff;
+      }
+      .tag {
+        display: inline-block;
+        margin-bottom: 8px;
+        background: #f2f0e9;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+      }
+      .warn { color: #8a4b11; }
+      .error { color: #8d1f1f; }
+      ul { margin: 8px 0; padding-left: 18px; }
+      .edit-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .edit-actions button {
+        width: auto;
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      .ghost {
+        background: #ece9df;
+        color: #222;
+      }
+      @media (max-width: 760px) {
+        .grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="panel">
+        <h1>AI Homework / Essay Grader</h1>
+        <p>Upload `.txt`, `.docx`, or `.pdf`, then evaluate by High School, College, PhD, or all levels.</p>
+        <form id="analyze-form" class="grid">
+          <div>
+            <label for="file">Essay File</label>
+            <input id="file" name="file" type="file" accept=".txt,.docx,.pdf" required />
+          </div>
+          <div>
+            <label for="targetLevel">Target Level</label>
+            <select id="targetLevel" name="targetLevel">
+              <option value="high_school">High School</option>
+              <option value="college" selected>College</option>
+              <option value="phd">PhD</option>
+              <option value="all">Run all levels</option>
+            </select>
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <button type="submit" id="submit">Analyze Essay</button>
+          </div>
+        </form>
+        <p id="status"></p>
+        <div id="results" class="results"></div>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("analyze-form");
+      const statusEl = document.getElementById("status");
+      const resultsEl = document.getElementById("results");
+      const editState = new Map();
+
+      function setStatus(message, kind = "normal") {
+        statusEl.className = kind === "error" ? "error" : kind === "warn" ? "warn" : "";
+        statusEl.textContent = message;
+      }
+
+      function el(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (typeof text === "string") node.textContent = text;
+        return node;
+      }
+
+      function renderExtraction(extraction) {
+        const card = el("div", "card");
+        card.appendChild(el("div", "tag", "Extraction"));
+        card.appendChild(el("p", "", `Paragraphs: ${extraction.paragraphs.length} | Sentences: ${extraction.sentenceMap.length}`));
+        if (extraction.extractionWarnings.length) {
+          for (const warning of extraction.extractionWarnings) {
+            card.appendChild(el("p", "warn", warning));
+          }
+        }
+        return card;
+      }
+
+      function renderRubricItem(item) {
+        const li = el("li");
+        const title = `${item.category}: ${item.score}/5`;
+        li.appendChild(el("strong", "", title));
+        li.appendChild(el("p", "", item.rationale));
+        const ev = el("ul");
+        if (item.evidence.length === 0) {
+          ev.appendChild(el("li", "", "No valid evidence snippets returned."));
+        } else {
+          for (const snippet of item.evidence) ev.appendChild(el("li", "", snippet));
+        }
+        li.appendChild(ev);
+        if (item.needsReview) {
+          li.appendChild(el("p", "warn", "Evidence required manual review for this rubric item."));
+        }
+        return li;
+      }
+
+      function renderGrade(grade) {
+        const card = el("div", "card");
+        card.appendChild(el("div", "tag", `Level: ${grade.level}`));
+
+        const rubricTitle = el("strong", "", "Rubric");
+        card.appendChild(rubricTitle);
+        const rubricList = el("ul");
+        grade.rubric.forEach((item) => rubricList.appendChild(renderRubricItem(item)));
+        card.appendChild(rubricList);
+
+        card.appendChild(el("strong", "", "Learning Gap"));
+        const strengths = el("ul");
+        grade.learningGap.strengths.forEach((s) => strengths.appendChild(el("li", "", s)));
+        card.appendChild(el("p", "", "Strengths"));
+        card.appendChild(strengths);
+        const next = el("ul");
+        grade.learningGap.nextSteps.forEach((n) => next.appendChild(el("li", "", n)));
+        card.appendChild(el("p", "", "Next Steps"));
+        card.appendChild(next);
+
+        if (grade.diagnostics) {
+          card.appendChild(el("strong", "", "PhD Diagnostics"));
+          card.appendChild(el("p", "", `Tone: ${grade.diagnostics.tone}`));
+          card.appendChild(el("p", "", `Voice: ${grade.diagnostics.voice}`));
+        }
+
+        return card;
+      }
+
+      function renderEdit(edit) {
+        const card = el("div", "card");
+        card.appendChild(el("div", "tag", `Edit: ${edit.type}`));
+        card.appendChild(el("p", "", `Original: ${edit.original_text}`));
+        card.appendChild(el("p", "", `Suggestion: ${edit.suggested_text}`));
+        card.appendChild(el("p", "", `Reason: ${edit.explanation}`));
+        const state = editState.get(edit.id);
+        if (state) {
+          card.appendChild(el("p", "", `Decision: ${state}`));
+        }
+
+        const actions = el("div", "edit-actions");
+        const acceptBtn = el("button", "", "Accept");
+        acceptBtn.type = "button";
+        acceptBtn.onclick = () => {
+          editState.set(edit.id, "accepted");
+          redrawLastResponse();
+        };
+        const rejectBtn = el("button", "ghost", "Reject");
+        rejectBtn.type = "button";
+        rejectBtn.onclick = () => {
+          editState.set(edit.id, "rejected");
+          redrawLastResponse();
+        };
+        actions.appendChild(acceptBtn);
+        actions.appendChild(rejectBtn);
+        card.appendChild(actions);
+        return card;
+      }
+
+      let lastResponse = null;
+      function redrawLastResponse() {
+        if (!lastResponse) return;
+        resultsEl.innerHTML = "";
+        resultsEl.appendChild(renderExtraction(lastResponse.extraction));
+        lastResponse.grades.forEach((grade) => resultsEl.appendChild(renderGrade(grade)));
+        const editsWrap = el("div", "card");
+        editsWrap.appendChild(el("div", "tag", `Edits (${lastResponse.edits.length})`));
+        lastResponse.edits.forEach((edit) => editsWrap.appendChild(renderEdit(edit)));
+        resultsEl.appendChild(editsWrap);
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const fileInput = document.getElementById("file");
+        const levelInput = document.getElementById("targetLevel");
+        if (!fileInput.files.length) return;
+
+        setStatus("Analyzing...");
+        resultsEl.innerHTML = "";
+
+        const body = new FormData();
+        body.append("file", fileInput.files[0]);
+        body.append("targetLevel", levelInput.value);
+
+        try {
+          const res = await fetch("/api/analyze", { method: "POST", body });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Request failed");
+          lastResponse = data;
+          redrawLastResponse();
+          setStatus("Analysis complete.");
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Unexpected error";
+          setStatus(msg, "error");
+        }
+      });
+    </script>
+  </body>
+</html>
