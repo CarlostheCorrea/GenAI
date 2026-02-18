@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, conint
 
 
 OrchestratorType = Literal["langgraph", "pydanticai"]
+ReasoningMode = Literal["off", "on", "default", "internal"]
 
 
 class RubricInfo(BaseModel):
@@ -28,6 +29,7 @@ class GradeRequest(BaseModel):
     orchestrator: OrchestratorType = "langgraph"
     user_instruction: Optional[str] = None
     grammar_only: bool = False
+    reasoning_mode: ReasoningMode = "off"
 
 
 class EditRequest(BaseModel):
@@ -38,6 +40,7 @@ class EditRequest(BaseModel):
 class AskRequest(BaseModel):
     orchestrator: OrchestratorType = "langgraph"
     question: str = Field(min_length=1)
+    reasoning_mode: ReasoningMode = "off"
 
 
 class GradingCriterionOutput(BaseModel):

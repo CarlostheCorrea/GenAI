@@ -54,6 +54,7 @@ class PydanticAIFlow:
         rubric_json: dict,
         user_instruction: str | None = None,
         grammar_only: bool = False,
+        reasoning_mode: str = "off",
     ) -> dict:
         model, reason, token_estimate = select_model(
             rubric_id=rubric_id,
@@ -68,7 +69,13 @@ class PydanticAIFlow:
             token_estimate,
         )
 
-        messages = build_grading_messages(document_text, rubric_json, rubric_id, user_instruction)
+        messages = build_grading_messages(
+            document_text,
+            rubric_json,
+            rubric_id,
+            user_instruction,
+            reasoning_mode,
+        )
         parsed, _ = self.llm_client.complete(
             model=model,
             messages=messages,
@@ -130,6 +137,7 @@ class PydanticAIFlow:
         grading_result: dict,
         question: str,
         prior_messages: list[dict],
+        reasoning_mode: str = "off",
     ) -> dict:
         logger.info(
             "Follow-up request context. question=%s context_included=%s",
@@ -149,7 +157,14 @@ class PydanticAIFlow:
             token_estimate,
         )
 
-        messages = build_followup_messages(document_text, rubric_json, grading_result, question, prior_messages)
+        messages = build_followup_messages(
+            document_text,
+            rubric_json,
+            grading_result,
+            question,
+            prior_messages,
+            reasoning_mode,
+        )
         parsed, _ = self.llm_client.complete(
             model=model,
             messages=messages,

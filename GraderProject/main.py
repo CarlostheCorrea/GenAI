@@ -115,12 +115,13 @@ def grade_session(session_id: str, req: GradeRequest):
     chars = len(session.document_text)
     est_toks = estimate_tokens(session.document_text + (req.user_instruction or ""))
     logger.info(
-        "Request received. type=grade session_id=%s rubric_id=%s doc_chars=%s est_tokens=%s orchestrator=%s",
+        "Request received. type=grade session_id=%s rubric_id=%s doc_chars=%s est_tokens=%s orchestrator=%s reasoning_mode=%s",
         session_id,
         rubric_id,
         chars,
         est_toks,
         req.orchestrator,
+        req.reasoning_mode,
     )
 
     flow = _get_flow(req.orchestrator)
@@ -130,6 +131,7 @@ def grade_session(session_id: str, req: GradeRequest):
         rubric_json=rubric_json,
         user_instruction=req.user_instruction,
         grammar_only=req.grammar_only,
+        reasoning_mode=req.reasoning_mode,
     )
 
     session.grading_result = result
@@ -179,12 +181,13 @@ def ask_session(session_id: str, req: AskRequest):
     chars = len(session.document_text)
     est_toks = estimate_tokens(session.document_text + req.question)
     logger.info(
-        "Request received. type=followup session_id=%s rubric_id=%s doc_chars=%s est_tokens=%s orchestrator=%s",
+        "Request received. type=followup session_id=%s rubric_id=%s doc_chars=%s est_tokens=%s orchestrator=%s reasoning_mode=%s",
         session_id,
         session.rubric_id,
         chars,
         est_toks,
         req.orchestrator,
+        req.reasoning_mode,
     )
 
     flow = _get_flow(req.orchestrator)
@@ -195,6 +198,7 @@ def ask_session(session_id: str, req: AskRequest):
         grading_result=session.grading_result,
         question=req.question,
         prior_messages=session.conversation,
+        reasoning_mode=req.reasoning_mode,
     )
 
     session.conversation.append({"role": "user", "content": req.question})

@@ -13,8 +13,10 @@ const els = {
   sessionId: document.getElementById("session-id"),
   gradeInstruction: document.getElementById("grade-instruction"),
   grammarOnly: document.getElementById("grammar-only"),
+  gradeChainOfThought: document.getElementById("grade-chain-of-thought"),
   editInstruction: document.getElementById("edit-instruction"),
   askQuestion: document.getElementById("ask-question"),
+  askChainOfThought: document.getElementById("ask-chain-of-thought"),
   gradeResult: document.getElementById("grade-result"),
   editResult: document.getElementById("edit-result"),
   askResult: document.getElementById("ask-result"),
@@ -193,6 +195,7 @@ els.gradeForm.addEventListener("submit", async (event) => {
       orchestrator: els.orchestrator.value,
       user_instruction: els.gradeInstruction.value.trim() || null,
       grammar_only: els.grammarOnly.checked,
+      reasoning_mode: els.gradeChainOfThought.checked ? "on" : "off",
     };
     const result = await api(`/sessions/${state.sessionId}/grade`, {
       method: "POST",
@@ -237,6 +240,7 @@ els.askForm.addEventListener("submit", async (event) => {
     const payload = {
       orchestrator: els.orchestrator.value,
       question: els.askQuestion.value.trim(),
+      reasoning_mode: els.askChainOfThought.checked ? "on" : "off",
     };
     const result = await api(`/sessions/${state.sessionId}/ask`, {
       method: "POST",

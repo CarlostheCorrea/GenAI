@@ -4,9 +4,25 @@ import json
 from typing import List
 
 
-def build_grading_messages(document_text: str, rubric_json: dict, rubric_id: str, user_instruction: str | None = None) -> List[dict]:
+def _reasoning_instruction(reasoning_mode: str) -> str:
+    if reasoning_mode in {"internal", "on"}:
+        return (
+            "Internal-only mode: you may reason privately before writing the answer, "
+            "but never reveal chain-of-thought or hidden reasoning. Return final JSON only."
+        )
+    return ""
+
+
+def build_grading_messages(
+    document_text: str,
+    rubric_json: dict,
+    rubric_id: str,
+    user_instruction: str | None = None,
+    reasoning_mode: str = "off",
+) -> List[dict]:
     rubric_compact = json.dumps(rubric_json, ensure_ascii=False)
     instruction = user_instruction or ""
+    reasoning_instruction = _reasoning_instruction(reasoning_mode)
     return [
         {
             "role": "system",
@@ -14,7 +30,8 @@ def build_grading_messages(document_text: str, rubric_json: dict, rubric_id: str
                 "You are a strict rubric grader. Return JSON only. Do not reveal chain-of-thought. "
                 "Use short rubric-anchored justifications only. For each criterion provide 1-2 direct quotes from the document, "
                 "each quote no more than 25 words. If evidence is missing, set score=1 and explain what is missing. "
-                "Do not compute category totals, overall score, or letter grade."
+                "Do not compute category totals, overall score, or letter grade. "
+                f"{reasoning_instruction}"
             ),
         },
         {
@@ -59,16 +76,19 @@ def build_followup_messages(
     grading_result: dict,
     question: str,
     prior_messages: List[dict],
+    reasoning_mode: str = "off",
 ) -> List[dict]:
     rubric_compact = json.dumps(rubric_json, ensure_ascii=False)
     grading_compact = json.dumps(grading_result, ensure_ascii=False)
+    reasoning_instruction = _reasoning_instruction(reasoning_mode)
     return [
         {
             "role": "system",
             "content": (
                 "You answer follow-up questions about an existing grading result. Keep score consistency unless user explicitly asks to re-grade. "
                 "Do not provide chain-of-thought. Provide concise answers with direct document citations as quotes <=25 words. "
-                "Return JSON only with fields: answer, citations (list), consistency_note."
+                "Return JSON only with fields: answer, citations (list), consistency_note. "
+                f"{reasoning_instruction}"
             ),
         },
         *prior_messages[-8:],

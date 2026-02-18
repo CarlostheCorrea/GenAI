@@ -66,6 +66,14 @@
             Grammar-only scoring mode
           </label>
 
+          <label class="switch-row">
+            <span>Chain-of-thought internal mode</span>
+            <span class="switch">
+              <input id="grade-chain-of-thought" class="switch-input" type="checkbox" />
+              <span class="switch-slider" aria-hidden="true"></span>
+            </span>
+          </label>
+
           <button type="submit">Run Grading</button>
         </form>
         <pre id="grade-result" class="result"></pre>
@@ -90,6 +98,14 @@
           <label class="full">
             Question
             <input id="ask-question" placeholder="Ask about a criterion and how to improve" required />
+          </label>
+
+          <label class="switch-row">
+            <span>Chain-of-thought internal mode</span>
+            <span class="switch">
+              <input id="ask-chain-of-thought" class="switch-input" type="checkbox" />
+              <span class="switch-slider" aria-hidden="true"></span>
+            </span>
           </label>
 
           <button type="submit">Ask</button>

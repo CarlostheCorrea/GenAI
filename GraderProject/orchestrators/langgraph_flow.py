@@ -23,6 +23,7 @@ class GradeState(TypedDict, total=False):
     rubric_json: dict
     user_instruction: str | None
     grammar_only: bool
+    reasoning_mode: str
     model: str
     route_reason: str
     token_estimate: int
@@ -77,6 +78,7 @@ class LangGraphFlow:
             state["rubric_json"],
             state["rubric_id"],
             state.get("user_instruction"),
+            state.get("reasoning_mode", "off"),
         )
         parsed, _ = self.llm_client.complete(
             model=state["model"],
@@ -119,6 +121,7 @@ class LangGraphFlow:
         rubric_json: dict,
         user_instruction: str | None = None,
         grammar_only: bool = False,
+        reasoning_mode: str = "off",
     ) -> dict:
         state: GradeState = {
             "document_text": document_text,
@@ -126,6 +129,7 @@ class LangGraphFlow:
             "rubric_json": rubric_json,
             "user_instruction": user_instruction,
             "grammar_only": grammar_only,
+            "reasoning_mode": reasoning_mode,
         }
         out = self._compiled_graph.invoke(state)
         return out["grading_result"]
@@ -165,6 +169,7 @@ class LangGraphFlow:
         grading_result: dict,
         question: str,
         prior_messages: list[dict],
+        reasoning_mode: str = "off",
     ) -> dict:
         logger.info(
             "Follow-up request context. question=%s context_included=%s",
@@ -184,7 +189,14 @@ class LangGraphFlow:
             token_estimate,
         )
 
-        messages = build_followup_messages(document_text, rubric_json, grading_result, question, prior_messages)
+        messages = build_followup_messages(
+            document_text,
+            rubric_json,
+            grading_result,
+            question,
+            prior_messages,
+            reasoning_mode,
+        )
         parsed, _ = self.llm_client.complete(
             model=model,
             messages=messages,
