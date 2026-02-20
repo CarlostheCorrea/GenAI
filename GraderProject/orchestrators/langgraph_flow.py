@@ -83,6 +83,7 @@ class LangGraphFlow:
         parsed, _ = self.llm_client.complete(
             model=state["model"],
             messages=messages,
+            temperature=0.0,
             response_format={"type": "json_object"},
             rubric_id=state["rubric_id"],
         )

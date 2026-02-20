@@ -24,6 +24,12 @@ class CreateSessionResponse(BaseModel):
     session_id: str
 
 
+class ExtractDocumentResponse(BaseModel):
+    filename: str
+    chars: int
+    document_text: str
+
+
 class GradeRequest(BaseModel):
     rubric_id: Optional[str] = None
     orchestrator: OrchestratorType = "langgraph"

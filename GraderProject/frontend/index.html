@@ -44,6 +44,13 @@
             <textarea id="document-text" placeholder="Paste student writing here..." required></textarea>
           </label>
 
+          <label class="full">
+            Upload Document (.pdf, .txt, .docx)
+            <input id="document-file" type="file" accept=".pdf,.txt,.docx,.doc" />
+          </label>
+
+          <button id="upload-document-btn" type="button">Extract Text From File</button>
+
           <button type="submit">Create Session</button>
         </form>
 
@@ -64,14 +71,6 @@
           <label class="checkbox-row">
             <input id="grammar-only" type="checkbox" />
             Grammar-only scoring mode
-          </label>
-
-          <label class="switch-row">
-            <span>Chain-of-thought internal mode</span>
-            <span class="switch">
-              <input id="grade-chain-of-thought" class="switch-input" type="checkbox" />
-              <span class="switch-slider" aria-hidden="true"></span>
-            </span>
           </label>
 
           <button type="submit">Run Grading</button>
@@ -98,14 +97,6 @@
           <label class="full">
             Question
             <input id="ask-question" placeholder="Ask about a criterion and how to improve" required />
-          </label>
-
-          <label class="switch-row">
-            <span>Chain-of-thought internal mode</span>
-            <span class="switch">
-              <input id="ask-chain-of-thought" class="switch-input" type="checkbox" />
-              <span class="switch-slider" aria-hidden="true"></span>
-            </span>
           </label>
 
           <button type="submit">Ask</button>

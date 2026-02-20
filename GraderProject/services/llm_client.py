@@ -22,6 +22,7 @@ class LLMClient:
         *,
         model: str,
         messages: list[dict[str, str]],
+        temperature: float = 0.2,
         response_format: Optional[dict[str, Any]] = None,
         rubric_id: Optional[str] = None,
     ) -> tuple[Any, str]:
@@ -36,7 +37,7 @@ class LLMClient:
         kwargs: dict[str, Any] = {
             "model": model,
             "messages": messages,
-            "temperature": 0.2,
+            "temperature": temperature,
         }
         if response_format is not None:
             kwargs["response_format"] = response_format

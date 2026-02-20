@@ -10,13 +10,13 @@ const els = {
   rubricSelect: document.getElementById("rubric-select"),
   orchestrator: document.getElementById("orchestrator-select"),
   docText: document.getElementById("document-text"),
+  documentFile: document.getElementById("document-file"),
+  uploadDocumentBtn: document.getElementById("upload-document-btn"),
   sessionId: document.getElementById("session-id"),
   gradeInstruction: document.getElementById("grade-instruction"),
   grammarOnly: document.getElementById("grammar-only"),
-  gradeChainOfThought: document.getElementById("grade-chain-of-thought"),
   editInstruction: document.getElementById("edit-instruction"),
   askQuestion: document.getElementById("ask-question"),
-  askChainOfThought: document.getElementById("ask-chain-of-thought"),
   gradeResult: document.getElementById("grade-result"),
   editResult: document.getElementById("edit-result"),
   askResult: document.getElementById("ask-result"),
@@ -45,6 +45,30 @@ async function api(path, options = {}) {
 
   if (!response.ok) {
     const detail = payload && payload.detail ? payload.detail : "Request failed";
+    throw new Error(String(detail));
+  }
+
+  return payload;
+}
+
+async function extractDocument(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch("/documents/extract", {
+    method: "POST",
+    body: formData,
+  });
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    const detail = payload && payload.detail ? payload.detail : "Failed to extract file text";
     throw new Error(String(detail));
   }
 
@@ -195,7 +219,7 @@ els.gradeForm.addEventListener("submit", async (event) => {
       orchestrator: els.orchestrator.value,
       user_instruction: els.gradeInstruction.value.trim() || null,
       grammar_only: els.grammarOnly.checked,
-      reasoning_mode: els.gradeChainOfThought.checked ? "on" : "off",
+      reasoning_mode: "on",
     };
     const result = await api(`/sessions/${state.sessionId}/grade`, {
       method: "POST",
@@ -240,7 +264,7 @@ els.askForm.addEventListener("submit", async (event) => {
     const payload = {
       orchestrator: els.orchestrator.value,
       question: els.askQuestion.value.trim(),
-      reasoning_mode: els.askChainOfThought.checked ? "on" : "off",
+      reasoning_mode: "off",
     };
     const result = await api(`/sessions/${state.sessionId}/ask`, {
       method: "POST",
@@ -257,4 +281,23 @@ els.askForm.addEventListener("submit", async (event) => {
 
 loadRubrics().catch((error) => {
   notify(`Failed to load rubrics: ${error.message}`, true);
+});
+
+els.uploadDocumentBtn.addEventListener("click", async () => {
+  const file = els.documentFile.files && els.documentFile.files[0];
+  if (!file) {
+    notify("Choose a file first (.pdf, .txt, .docx).", true);
+    return;
+  }
+
+  els.uploadDocumentBtn.disabled = true;
+  try {
+    const result = await extractDocument(file);
+    els.docText.value = result.document_text;
+    notify(`Loaded ${result.filename} (${result.chars} chars).`);
+  } catch (error) {
+    notify(error.message, true);
+  } finally {
+    els.uploadDocumentBtn.disabled = false;
+  }
 });

@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from typing import Dict
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -15,9 +15,11 @@ from schemas import (
     CreateSessionRequest,
     CreateSessionResponse,
     EditRequest,
+    ExtractDocumentResponse,
     GradeRequest,
     RubricInfo,
 )
+from services.document_extractor import SUPPORTED_EXTENSIONS, extract_text_from_file
 from services.llm_client import LLMClient
 from services.model_router import estimate_tokens
 from services.rubric_loader import RubricLoader
@@ -67,6 +69,25 @@ def list_rubrics() -> list[RubricInfo]:
 @app.get("/health", include_in_schema=False)
 def healthcheck() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.post("/documents/extract", response_model=ExtractDocumentResponse)
+async def extract_document(file: UploadFile = File(...)) -> ExtractDocumentResponse:
+    filename = file.filename or "uploaded_file"
+    suffix = Path(filename).suffix.lower()
+    if suffix not in SUPPORTED_EXTENSIONS and suffix != ".doc":
+        raise HTTPException(status_code=400, detail="Unsupported file type. Allowed: .pdf, .txt, .docx")
+
+    raw = await file.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+    try:
+        text = extract_text_from_file(filename, raw)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return ExtractDocumentResponse(filename=filename, chars=len(text), document_text=text)
 
 
 @app.get("/", include_in_schema=False)

@@ -20,6 +20,7 @@ Open: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 ## Frontend Workflow
 
 1. Create session with text + rubric
+   - You can paste text directly, or upload `.pdf`, `.txt`, or `.docx` and extract text into the editor first.
 2. Run grading (`/sessions/{id}/grade`)
 3. Request edits (`/sessions/{id}/edit`)
 4. Ask follow-up questions (`/sessions/{id}/ask`)
@@ -29,6 +30,7 @@ Open: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 - `GET /rubrics`
 - `GET /health`
 - `POST /sessions`
+- `POST /documents/extract` (multipart file upload: `.pdf`, `.txt`, `.docx`)
 - `POST /sessions/{session_id}/grade`
 - `POST /sessions/{session_id}/edit`
 - `POST /sessions/{session_id}/ask`

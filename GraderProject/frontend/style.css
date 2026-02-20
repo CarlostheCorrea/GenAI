@@ -144,9 +144,10 @@ button:disabled {
 .switch-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0.75rem;
   color: var(--ink);
+  flex-wrap: wrap;
 }
 
 .switch {
@@ -197,6 +198,12 @@ button:disabled {
 .switch-input:focus-visible + .switch-slider {
   outline: 2px solid var(--accent-deep);
   outline-offset: 2px;
+}
+
+.switch-state {
+  min-width: 2.2rem;
+  font-weight: 700;
+  color: var(--muted);
 }
 
 .status-line {

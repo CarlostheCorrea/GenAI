@@ -8,7 +8,10 @@ def _reasoning_instruction(reasoning_mode: str) -> str:
     if reasoning_mode in {"internal", "on"}:
         return (
             "Internal-only mode: you may reason privately before writing the answer, "
-            "but never reveal chain-of-thought or hidden reasoning. Return final JSON only."
+            "but never reveal chain-of-thought or hidden reasoning. "
+            "Use a fixed internal rubric process for each criterion: find direct evidence, map to the closest rubric anchor, "
+            "assign the score that best matches that anchor, and if evidence is weak or mixed, choose the lower score. "
+            "Return final JSON only."
         )
     return ""
 
@@ -30,6 +33,7 @@ def build_grading_messages(
                 "You are a strict rubric grader. Return JSON only. Do not reveal chain-of-thought. "
                 "Use short rubric-anchored justifications only. For each criterion provide 1-2 direct quotes from the document, "
                 "each quote no more than 25 words. If evidence is missing, set score=1 and explain what is missing. "
+                "Keep scoring consistent by applying the same rubric threshold logic across all criteria and avoiding score inflation. "
                 "Do not compute category totals, overall score, or letter grade. "
                 f"{reasoning_instruction}"
             ),
