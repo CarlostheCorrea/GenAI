@@ -44,28 +44,6 @@ Rubrics are loaded from `FileJson/` with fixed IDs:
 - `phdMeta_updated.json` -> `phd_unified_meta_v3`
 - `HumanSosMeta_updated.json` -> `college_humanities_social_sciences_meta_v2`
 
-## Docker Deploy (Recommended)
-
-Build and run as a single container:
-
-```bash
-docker build -t rubric-grader .
-docker run --rm -p 8000:8000 -e OPENAI_API_KEY="$OPENAI_API_KEY" rubric-grader
-```
-
-Then open: [http://localhost:8000](http://localhost:8000)
-
-## Deploy Platforms
-
-This repo is deploy-ready for container platforms (Render, Railway, Fly.io, ECS, Cloud Run, etc.) using:
-
-- `Dockerfile`
-- `PORT` env support in container start command
-
-Required env var:
-
-- `OPENAI_API_KEY`
-
 ## Notes
 
 - Session storage is currently in-memory; restarting the service clears sessions.

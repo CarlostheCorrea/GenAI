@@ -19,7 +19,7 @@
         <p class="eyebrow">GPT Grader Workspace</p>
         <h1>Grade essays with rubrics, edits, and follow-up Q&amp;A</h1>
         <p>
-          Paste writing, pick a rubric, and run grading with either orchestrator. Then request grammar edits or ask targeted follow-up questions.
+          Paste writing, pick a rubric, and run consistent grading. Then request grammar edits or ask targeted follow-up questions.
         </p>
       </section>
 
@@ -31,14 +31,6 @@
             <select id="rubric-select" required></select>
           </label>
           <p id="rubric-summary" class="rubric-summary full"></p>
-
-          <label>
-            Orchestrator
-            <select id="orchestrator-select">
-              <option value="langgraph">langgraph</option>
-              <option value="pydanticai">pydanticai</option>
-            </select>
-          </label>
 
           <label class="full">
             Document Text
@@ -108,6 +100,6 @@
       <section id="toast" class="toast" aria-live="polite"></section>
     </main>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=20260221-1"></script>
   </body>
 </html>

@@ -19,7 +19,7 @@ class RubricInfo(BaseModel):
 class CreateSessionRequest(BaseModel):
     document_text: str = Field(min_length=1)
     rubric_id: str
-    orchestrator: OrchestratorType = "langgraph"
+    orchestrator: OrchestratorType = "pydanticai"
 
 
 class CreateSessionResponse(BaseModel):
@@ -34,19 +34,19 @@ class ExtractDocumentResponse(BaseModel):
 
 class GradeRequest(BaseModel):
     rubric_id: Optional[str] = None
-    orchestrator: OrchestratorType = "langgraph"
+    orchestrator: OrchestratorType = "pydanticai"
     user_instruction: Optional[str] = None
     grammar_only: bool = False
     reasoning_mode: ReasoningMode = "off"
 
 
 class EditRequest(BaseModel):
-    orchestrator: OrchestratorType = "langgraph"
+    orchestrator: OrchestratorType = "pydanticai"
     instruction: Optional[str] = None
 
 
 class AskRequest(BaseModel):
-    orchestrator: OrchestratorType = "langgraph"
+    orchestrator: OrchestratorType = "pydanticai"
     question: str = Field(min_length=1)
     reasoning_mode: ReasoningMode = "off"
 

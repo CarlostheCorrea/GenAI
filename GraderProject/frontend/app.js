@@ -2,6 +2,7 @@ const state = {
   sessionId: null,
   rubricsById: {},
 };
+const DEFAULT_ORCHESTRATOR = "pydanticai";
 
 const els = {
   createForm: document.getElementById("create-form"),
@@ -10,7 +11,6 @@ const els = {
   askForm: document.getElementById("ask-form"),
   rubricSelect: document.getElementById("rubric-select"),
   rubricSummary: document.getElementById("rubric-summary"),
-  orchestrator: document.getElementById("orchestrator-select"),
   docText: document.getElementById("document-text"),
   documentFile: document.getElementById("document-file"),
   uploadDocumentBtn: document.getElementById("upload-document-btn"),
@@ -178,6 +178,14 @@ function setLoading(form, loading) {
   button.disabled = loading;
 }
 
+function selectedOrchestrator() {
+  const maybeSelect = document.getElementById("orchestrator-select");
+  if (maybeSelect && typeof maybeSelect.value === "string" && maybeSelect.value.trim()) {
+    return maybeSelect.value;
+  }
+  return DEFAULT_ORCHESTRATOR;
+}
+
 async function loadRubrics() {
   const rubrics = await api("/rubrics");
   state.rubricsById = {};
@@ -212,7 +220,7 @@ els.createForm.addEventListener("submit", async (event) => {
     const payload = {
       document_text: els.docText.value.trim(),
       rubric_id: els.rubricSelect.value,
-      orchestrator: els.orchestrator.value,
+      orchestrator: selectedOrchestrator(),
     };
     const result = await api("/sessions", {
       method: "POST",
@@ -234,7 +242,7 @@ els.gradeForm.addEventListener("submit", async (event) => {
   try {
     requireSession();
     const payload = {
-      orchestrator: els.orchestrator.value,
+      orchestrator: selectedOrchestrator(),
       user_instruction: els.gradeInstruction.value.trim() || null,
       grammar_only: els.grammarOnly.checked,
       reasoning_mode: "on",
@@ -258,7 +266,7 @@ els.editForm.addEventListener("submit", async (event) => {
   try {
     requireSession();
     const payload = {
-      orchestrator: els.orchestrator.value,
+      orchestrator: selectedOrchestrator(),
       instruction: els.editInstruction.value.trim() || null,
     };
     const result = await api(`/sessions/${state.sessionId}/edit`, {
@@ -280,7 +288,7 @@ els.askForm.addEventListener("submit", async (event) => {
   try {
     requireSession();
     const payload = {
-      orchestrator: els.orchestrator.value,
+      orchestrator: selectedOrchestrator(),
       question: els.askQuestion.value.trim(),
       reasoning_mode: "off",
     };

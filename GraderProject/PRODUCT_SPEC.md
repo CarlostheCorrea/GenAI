@@ -4,7 +4,7 @@
 
 Rubric Grader is a web-based grading assistant that evaluates user-submitted writing against predefined academic rubrics, generates improvement edits, and supports follow-up Q&A on results.
 
-The product ships as a single FastAPI service with an embedded frontend and is designed for fast local use and containerized deployment.
+The product ships as a single FastAPI service with an embedded frontend and is designed for fast local use.
 
 ## 2. Problem Statement
 
@@ -15,7 +15,7 @@ Manual rubric-based grading is time-intensive and often inconsistent. Users also
 - Provide consistent rubric-based scoring from uploaded text.
 - Generate practical grammar and clarity edit suggestions.
 - Support contextual follow-up questions tied to prior grading.
-- Keep setup simple for local and container deployment.
+- Keep setup simple for local deployment.
 
 ## 4. Non-Goals
 
@@ -76,7 +76,6 @@ Manual rubric-based grading is time-intensive and often inconsistent. Users also
 
 - API response for standard requests should generally complete within a few seconds, depending on model latency.
 - Service must run locally with minimal setup (`pip install` + `uvicorn`).
-- Service must run in Docker with `OPENAI_API_KEY` configured.
 - Product must avoid requesting or returning chain-of-thought.
 
 ## 9. API Surface (Current)
