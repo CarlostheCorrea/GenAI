@@ -63,7 +63,15 @@ def startup() -> None:
 
 @app.get("/rubrics", response_model=list[RubricInfo])
 def list_rubrics() -> list[RubricInfo]:
-    return [RubricInfo(rubric_id=k, name=v.get("name", k)) for k, v in rubrics.items()]
+    return [
+        RubricInfo(
+            rubric_id=k,
+            name=v.get("name", k),
+            short_title=v.get("short_title", v.get("name", k)),
+            summary=v.get("summary", "Evaluates writing quality using structured criteria."),
+        )
+        for k, v in rubrics.items()
+    ]
 
 
 @app.get("/health", include_in_schema=False)

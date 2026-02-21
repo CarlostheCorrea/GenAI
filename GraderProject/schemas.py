@@ -12,6 +12,8 @@ ReasoningMode = Literal["off", "on", "default", "internal"]
 class RubricInfo(BaseModel):
     rubric_id: str
     name: str
+    short_title: str
+    summary: str
 
 
 class CreateSessionRequest(BaseModel):

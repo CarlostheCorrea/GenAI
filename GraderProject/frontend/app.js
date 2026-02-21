@@ -1,5 +1,6 @@
 const state = {
   sessionId: null,
+  rubricsById: {},
 };
 
 const els = {
@@ -8,6 +9,7 @@ const els = {
   editForm: document.getElementById("edit-form"),
   askForm: document.getElementById("ask-form"),
   rubricSelect: document.getElementById("rubric-select"),
+  rubricSummary: document.getElementById("rubric-summary"),
   orchestrator: document.getElementById("orchestrator-select"),
   docText: document.getElementById("document-text"),
   documentFile: document.getElementById("document-file"),
@@ -178,13 +180,29 @@ function setLoading(form, loading) {
 
 async function loadRubrics() {
   const rubrics = await api("/rubrics");
+  state.rubricsById = {};
   els.rubricSelect.innerHTML = "";
   for (const rubric of rubrics) {
+    state.rubricsById[rubric.rubric_id] = rubric;
     const option = document.createElement("option");
     option.value = rubric.rubric_id;
-    option.textContent = `${rubric.name} (${rubric.rubric_id})`;
+    const shortTitle = rubric.short_title || rubric.name || rubric.rubric_id;
+    option.textContent = shortTitle;
+    option.title = option.textContent;
     els.rubricSelect.append(option);
   }
+  updateRubricSummary();
+}
+
+function updateRubricSummary() {
+  const selected = state.rubricsById[els.rubricSelect.value];
+  if (!selected) {
+    els.rubricSummary.textContent = "";
+    return;
+  }
+  const shortTitle = selected.short_title || selected.name || selected.rubric_id;
+  const summary = selected.summary || "Evaluates writing quality using structured criteria.";
+  els.rubricSummary.textContent = `${shortTitle}: ${summary}`;
 }
 
 els.createForm.addEventListener("submit", async (event) => {
@@ -282,6 +300,8 @@ els.askForm.addEventListener("submit", async (event) => {
 loadRubrics().catch((error) => {
   notify(`Failed to load rubrics: ${error.message}`, true);
 });
+
+els.rubricSelect.addEventListener("change", updateRubricSummary);
 
 els.uploadDocumentBtn.addEventListener("click", async () => {
   const file = els.documentFile.files && els.documentFile.files[0];
