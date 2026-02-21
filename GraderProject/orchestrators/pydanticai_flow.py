@@ -8,7 +8,7 @@ from pydantic import BaseModel, ValidationError
 
 from schemas import FollowUpResponse, TaskAGradingOutput, TaskBEditsOutput
 from services.model_router import select_model
-from services.output_sanitizer import sanitize_quotes
+from services.output_sanitizer import enforce_followup_constraints, sanitize_quotes
 from services.prompt_builder import (
     build_edit_messages,
     build_fix_json_messages,
@@ -180,6 +180,7 @@ class PydanticAIFlow:
             model=model,
             rubric_id=rubric_id,
         )
+        validated["answer"] = enforce_followup_constraints(validated.get("answer", ""), question)
         validated["citations"] = sanitize_quotes(validated.get("citations", []), max_quotes=5)
         logger.info("After model call stats. citation_count=%s", len(validated.get("citations", [])))
         return validated

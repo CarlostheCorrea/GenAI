@@ -1,52 +1,114 @@
-# Rubric Grader (Backend + Frontend)
+# Rubric Grader
 
-Single FastAPI service with:
+Rubric Grader is a local FastAPI app with a built-in web UI for:
 
 - rubric-based grading
 - grammar/clarity edit suggestions
-- follow-up Q&A over grading results
-- a built-in web frontend at `/`
+- follow-up Q&A on grading results
 
-## Quick Start (Local)
+## Requirements
+
+- Python 3.10+
+- OpenAI API key
+
+## Quick Start (3 Steps)
+
+### 1. Clone and enter the project
 
 ```bash
-pip install -r requirements.txt
-export OPENAI_API_KEY="your_key_here"
-uvicorn main:app --reload
+git clone <your-repo-url>
+cd GraderProject
 ```
 
-Open: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+### 2. Set your OpenAI API key
+
+macOS/Linux:
+
+```bash
+export OPENAI_API_KEY="your_key_here"
+```
+
+Windows PowerShell:
+
+```powershell
+$env:OPENAI_API_KEY="your_key_here"
+```
+
+### 3. Run the app
+
+macOS/Linux:
+
+```bash
+./run.sh
+```
+
+Windows PowerShell:
+
+```powershell
+.\run.ps1
+```
+
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+## Manual Run (No Script)
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app
+```
 
 ## Frontend Workflow
 
-1. Create session with text + rubric
-   - You can paste text directly, or upload `.pdf`, `.txt`, or `.docx` and extract text into the editor first.
-2. Run grading (`/sessions/{id}/grade`)
-3. Request edits (`/sessions/{id}/edit`)
-4. Ask follow-up questions (`/sessions/{id}/ask`)
+1. Choose a rubric.
+2. Paste text or upload `.pdf`, `.txt`, or `.docx` and click `Extract Text From File`.
+3. Click `Create Session`.
+4. Run grading, edits, or follow-up Q&A.
+
+## How To Use The App
+
+1. In `Session Setup`, add your document:
+   - Paste text directly into `Document Text`, or
+   - Upload a `.txt`, `.pdf`, or `.docx` file and click `Extract Text From File`.
+2. Pick the rubric that best matches your assignment.
+3. Click `Create Session`.
+4. Use one of the actions:
+   - `Run Grading` to score the paper against the rubric.
+   - `Generate Edits` for grammar/clarity suggestions.
+   - `Ask` in `Follow-up Q&A` to ask questions about the paper or grading.
 
 ## API Endpoints
 
 - `GET /rubrics`
 - `GET /health`
+- `POST /documents/extract` (multipart upload: `.pdf`, `.txt`, `.docx`)
 - `POST /sessions`
-- `POST /documents/extract` (multipart file upload: `.pdf`, `.txt`, `.docx`)
 - `POST /sessions/{session_id}/grade`
 - `POST /sessions/{session_id}/edit`
 - `POST /sessions/{session_id}/ask`
 
-## Rubrics
+## Rubric Files
 
-Rubrics are loaded from `FileJson/` with fixed IDs:
-
-- `OtherCatMeta_updated.json` -> `college_cross_disciplinary_other_v1`
-- `NatSciMeta_updated.json` -> `essay_quality_v2`
-- `phdMeta_updated.json` -> `phd_unified_meta_v3`
-- `HumanSosMeta_updated.json` -> `college_humanities_social_sciences_meta_v2`
+- `FileJson/OtherCatMeta_updated.json` -> `college_cross_disciplinary_other_v1`
+- `FileJson/NatSciMeta_updated.json` -> `essay_quality_v2`
+- `FileJson/phdMeta_updated.json` -> `phd_unified_meta_v3`
+- `FileJson/HumanSosMeta_updated.json` -> `college_humanities_social_sciences_meta_v2`
 
 ## Notes
 
-- Session storage is currently in-memory; restarting the service clears sessions.
-- Grading calibration examples are loaded from `SampleEssays/` per rubric and used as internal scoring anchors.
-- Category and overall scores are computed by backend code.
+- Sessions are stored in memory; restarting the app clears sessions.
+- Calibration examples are loaded from `SampleEssays/` per rubric and used as internal scoring anchors.
 - The system does not request or return chain-of-thought.
+
+## Troubleshooting
+
+- `OPENAI_API_KEY is not set`:
+  - Set the environment variable, then rerun the app.
+- `Address already in use` on port 8000:
+  - Stop the process using port 8000, or run:
+  - `uvicorn main:app --port 8001`
+- Browser shows stale UI behavior:
+  - Hard refresh (`Cmd+Shift+R` on macOS, `Ctrl+F5` on Windows).
+- Server restarts repeatedly in a loop:
+  - Use stable mode without reload: `uvicorn main:app`

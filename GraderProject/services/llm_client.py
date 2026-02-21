@@ -5,7 +5,7 @@ import logging
 import os
 from typing import Any, Optional
 
-from openai import OpenAI
+from openai import BadRequestError, OpenAI
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,8 @@ class LLMClient:
         model: str,
         messages: list[dict[str, str]],
         temperature: float = 0.2,
+        top_p: float = 1.0,
+        seed: int | None = 42,
         response_format: Optional[dict[str, Any]] = None,
         rubric_id: Optional[str] = None,
     ) -> tuple[Any, str]:
@@ -38,11 +40,23 @@ class LLMClient:
             "model": model,
             "messages": messages,
             "temperature": temperature,
+            "top_p": top_p,
         }
+        if seed is not None:
+            kwargs["seed"] = seed
         if response_format is not None:
             kwargs["response_format"] = response_format
 
-        response = self.client.chat.completions.create(**kwargs)
+        try:
+            response = self.client.chat.completions.create(**kwargs)
+        except BadRequestError as exc:
+            # Some model backends may not support seeded sampling; fallback safely.
+            if "seed" in kwargs and "seed" in str(exc).lower():
+                logger.warning("Model rejected seed parameter; retrying without seed. model=%s", model)
+                kwargs.pop("seed", None)
+                response = self.client.chat.completions.create(**kwargs)
+            else:
+                raise
         content = response.choices[0].message.content or ""
 
         parsed: Any = content

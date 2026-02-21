@@ -6,7 +6,7 @@ from typing import Any, Dict, TypedDict
 from langgraph.graph import END, START, StateGraph
 
 from services.model_router import select_model
-from services.output_sanitizer import sanitize_quotes
+from services.output_sanitizer import enforce_followup_constraints, sanitize_quotes
 from services.prompt_builder import (
     build_edit_messages,
     build_followup_messages,
@@ -209,6 +209,7 @@ class LangGraphFlow:
             rubric_id=rubric_id,
         )
         if isinstance(parsed, dict):
+            parsed["answer"] = enforce_followup_constraints(parsed.get("answer", ""), question)
             parsed["citations"] = sanitize_quotes(parsed.get("citations", []), max_quotes=5)
         logger.info(
             "After model call stats. citation_count=%s",

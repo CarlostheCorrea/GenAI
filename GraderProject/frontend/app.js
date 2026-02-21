@@ -146,8 +146,6 @@ function formatAskResult(data) {
     "",
     "Citations:",
     toBullet(data.citations),
-    "",
-    `Consistency Note: ${data.consistency_note ?? "N/A"}`,
   ].join("\n");
 }
 

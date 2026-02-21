@@ -106,6 +106,8 @@ def build_followup_messages(
             "content": (
                 "You answer follow-up questions about an existing grading result. Keep score consistency unless user explicitly asks to re-grade. "
                 "Do not provide chain-of-thought. Provide concise answers with direct document citations as quotes <=25 words. "
+                "Follow the user's requested output format exactly (for example: exact sentence count, bullets, or length constraints). "
+                "If the user asks for N sentences, return exactly N sentences in the answer field. "
                 "Return JSON only with fields: answer, citations (list), consistency_note. "
                 f"{reasoning_instruction}"
             ),
