@@ -55,6 +55,7 @@ class PydanticAIFlow:
         user_instruction: str | None = None,
         grammar_only: bool = False,
         reasoning_mode: str = "off",
+        calibration_examples: list[dict] | None = None,
     ) -> dict:
         model, reason, token_estimate = select_model(
             rubric_id=rubric_id,
@@ -75,6 +76,7 @@ class PydanticAIFlow:
             rubric_id,
             user_instruction,
             reasoning_mode,
+            calibration_examples,
         )
         parsed, _ = self.llm_client.complete(
             model=model,

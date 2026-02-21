@@ -20,6 +20,7 @@ from schemas import (
     RubricInfo,
 )
 from services.document_extractor import SUPPORTED_EXTENSIONS, extract_text_from_file
+from services.calibration_loader import load_calibration_examples, pick_calibration_anchors
 from services.llm_client import LLMClient
 from services.model_router import estimate_tokens
 from services.rubric_loader import RubricLoader
@@ -32,6 +33,7 @@ app = FastAPI(title="Rubric Grader Backend", version="1.0.0")
 frontend_dir = Path(__file__).parent / "frontend"
 
 rubrics: Dict[str, dict] = {}
+calibration_bank: Dict[str, list[dict]] = {}
 session_store = InMemorySessionStore()
 llm_client: LLMClient | None = None
 langgraph_flow: LangGraphFlow | None = None
@@ -52,9 +54,10 @@ def _get_flow(orchestrator: str):
 
 @app.on_event("startup")
 def startup() -> None:
-    global rubrics, llm_client, langgraph_flow, pydanticai_flow
+    global rubrics, calibration_bank, llm_client, langgraph_flow, pydanticai_flow
     loader = RubricLoader(Path(__file__).parent / "FileJson")
     rubrics = loader.load_all()
+    calibration_bank = load_calibration_examples(Path(__file__).parent / "SampleEssays")
 
     llm_client = LLMClient()
     langgraph_flow = LangGraphFlow(llm_client)
@@ -161,6 +164,7 @@ def grade_session(session_id: str, req: GradeRequest):
         user_instruction=req.user_instruction,
         grammar_only=req.grammar_only,
         reasoning_mode=req.reasoning_mode,
+        calibration_examples=pick_calibration_anchors(calibration_bank.get(rubric_id, []), max_examples=3),
     )
 
     session.grading_result = result

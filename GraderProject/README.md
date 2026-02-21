@@ -47,5 +47,6 @@ Rubrics are loaded from `FileJson/` with fixed IDs:
 ## Notes
 
 - Session storage is currently in-memory; restarting the service clears sessions.
+- Grading calibration examples are loaded from `SampleEssays/` per rubric and used as internal scoring anchors.
 - Category and overall scores are computed by backend code.
 - The system does not request or return chain-of-thought.

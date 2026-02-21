@@ -22,10 +22,23 @@ def build_grading_messages(
     rubric_id: str,
     user_instruction: str | None = None,
     reasoning_mode: str = "off",
+    calibration_examples: list[dict] | None = None,
 ) -> List[dict]:
     rubric_compact = json.dumps(rubric_json, ensure_ascii=False)
     instruction = user_instruction or ""
     reasoning_instruction = _reasoning_instruction(reasoning_mode)
+    examples_block = ""
+    if calibration_examples:
+        rows: list[str] = []
+        for idx, row in enumerate(calibration_examples, start=1):
+            grade = row.get("grade", "Unknown")
+            excerpt = row.get("excerpt", "")
+            rows.append(f"Example {idx} (target grade: {grade}):\n{excerpt}")
+        examples_block = (
+            "\nCalibration examples (for score calibration only, never copy wording):\n"
+            + "\n\n".join(rows)
+            + "\n"
+        )
     return [
         {
             "role": "system",
@@ -46,7 +59,9 @@ def build_grading_messages(
                 "Return a JSON object with fields: \n"
                 "criteria: [{criterion_id, score (1-4 int), label, evidence_quotes (1-2), justification (2-4 sentences)}],\n"
                 "summary_strengths (2-4 bullets), priority_revisions (2-4 bullets), confidence (0-100).\n"
+                "Calibrate strictness against the provided examples while grading only the current document.\n"
                 f"Additional grader instruction: {instruction}\n\n"
+                f"{examples_block}\n"
                 f"Document:\n{document_text}"
             ),
         },

@@ -24,6 +24,7 @@ class GradeState(TypedDict, total=False):
     user_instruction: str | None
     grammar_only: bool
     reasoning_mode: str
+    calibration_examples: list[dict]
     model: str
     route_reason: str
     token_estimate: int
@@ -79,6 +80,7 @@ class LangGraphFlow:
             state["rubric_id"],
             state.get("user_instruction"),
             state.get("reasoning_mode", "off"),
+            state.get("calibration_examples"),
         )
         parsed, _ = self.llm_client.complete(
             model=state["model"],
@@ -123,6 +125,7 @@ class LangGraphFlow:
         user_instruction: str | None = None,
         grammar_only: bool = False,
         reasoning_mode: str = "off",
+        calibration_examples: list[dict] | None = None,
     ) -> dict:
         state: GradeState = {
             "document_text": document_text,
@@ -131,6 +134,7 @@ class LangGraphFlow:
             "user_instruction": user_instruction,
             "grammar_only": grammar_only,
             "reasoning_mode": reasoning_mode,
+            "calibration_examples": calibration_examples or [],
         }
         out = self._compiled_graph.invoke(state)
         return out["grading_result"]
