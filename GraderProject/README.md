@@ -16,8 +16,8 @@ Rubric Grader is a local FastAPI app with a built-in web UI for:
 ### 1. Clone and enter the project
 
 ```bash
-git clone <your-repo-url>
-cd GraderProject
+git clone https://github.com/CarlostheCorrea/GenAI.git
+cd GenAI/GraderProject
 ```
 
 ### 2. Set your OpenAI API key
