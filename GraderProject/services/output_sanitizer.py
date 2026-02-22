@@ -64,3 +64,35 @@ def enforce_followup_constraints(answer: str, question: str) -> str:
 
     # If fewer sentences than requested, keep answer but normalize spacing.
     return " ".join(sentences).strip()
+
+
+def normalize_grading_evidence(grading_payload: dict) -> tuple[dict, int]:
+    if not isinstance(grading_payload, dict):
+        return grading_payload, 0
+
+    criteria = grading_payload.get("criteria")
+    if not isinstance(criteria, list):
+        return grading_payload, 0
+
+    adjusted = 0
+    for row in criteria:
+        if not isinstance(row, dict):
+            continue
+
+        quotes = row.get("evidence_quotes")
+        if not isinstance(quotes, list):
+            row["evidence_quotes"] = []
+            quotes = []
+
+        cleaned_quotes = [q for q in quotes if isinstance(q, str) and q.strip()]
+        row["evidence_quotes"] = cleaned_quotes[:2]
+
+        score = row.get("score")
+        if isinstance(score, int) and score > 1 and len(row["evidence_quotes"]) == 0:
+            row["score"] = 1
+            adjusted += 1
+            just = str(row.get("justification", "")).strip()
+            suffix = " Score adjusted to 1 because no direct evidence quote was provided."
+            row["justification"] = (just + suffix).strip()
+
+    return grading_payload, adjusted

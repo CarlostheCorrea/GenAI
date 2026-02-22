@@ -55,7 +55,7 @@ class GradingCriterionOutput(BaseModel):
     criterion_id: str
     score: conint(ge=1, le=4)
     label: str
-    evidence_quotes: List[str] = Field(default_factory=list, min_length=1, max_length=2)
+    evidence_quotes: List[str] = Field(default_factory=list, max_length=2)
     justification: str
 
 

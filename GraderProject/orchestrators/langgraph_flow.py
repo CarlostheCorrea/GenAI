@@ -6,7 +6,7 @@ from typing import Any, Dict, TypedDict
 from langgraph.graph import END, START, StateGraph
 
 from services.model_router import select_model
-from services.output_sanitizer import enforce_followup_constraints, sanitize_quotes
+from services.output_sanitizer import enforce_followup_constraints, normalize_grading_evidence, sanitize_quotes
 from services.prompt_builder import (
     build_edit_messages,
     build_followup_messages,
@@ -89,6 +89,9 @@ class LangGraphFlow:
             response_format={"type": "json_object"},
             rubric_id=state["rubric_id"],
         )
+        parsed, adjusted_count = normalize_grading_evidence(parsed)
+        if adjusted_count:
+            logger.info("Applied grading evidence normalization. criteria_adjusted=%s", adjusted_count)
         criteria_count = len(parsed.get("criteria", [])) if isinstance(parsed, dict) else 0
         logger.info("After model call stats. criteria_scored=%s", criteria_count)
         state["grading_result"] = parsed

@@ -8,7 +8,7 @@ from pydantic import BaseModel, ValidationError
 
 from schemas import FollowUpResponse, TaskAGradingOutput, TaskBEditsOutput
 from services.model_router import select_model
-from services.output_sanitizer import enforce_followup_constraints, sanitize_quotes
+from services.output_sanitizer import enforce_followup_constraints, normalize_grading_evidence, sanitize_quotes
 from services.prompt_builder import (
     build_edit_messages,
     build_fix_json_messages,
@@ -85,6 +85,9 @@ class PydanticAIFlow:
             response_format={"type": "json_object"},
             rubric_id=rubric_id,
         )
+        parsed, adjusted_count = normalize_grading_evidence(parsed)
+        if adjusted_count:
+            logger.info("Applied grading evidence normalization. criteria_adjusted=%s", adjusted_count)
         validated = self._validate_with_retry(
             schema_cls=TaskAGradingOutput,
             payload=parsed,

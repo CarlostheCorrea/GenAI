@@ -44,8 +44,9 @@ def build_grading_messages(
             "role": "system",
             "content": (
                 "You are a strict rubric grader. Return JSON only. Do not reveal chain-of-thought. "
-                "Use short rubric-anchored justifications only. For each criterion provide 1-2 direct quotes from the document, "
-                "each quote no more than 25 words. If evidence is missing, set score=1 and explain what is missing. "
+                "Use short rubric-anchored justifications only. For each criterion provide 1-2 direct quotes from the document when available, "
+                "each quote no more than 25 words. If evidence is missing, set score=1, set evidence_quotes to an empty list, "
+                "and explain what evidence is missing in justification. "
                 "Keep scoring consistent by applying the same rubric threshold logic across all criteria and avoiding score inflation. "
                 "Do not compute category totals, overall score, or letter grade. "
                 f"{reasoning_instruction}"
@@ -57,7 +58,7 @@ def build_grading_messages(
                 f"Rubric ID: {rubric_id}\n"
                 f"Rubric JSON: {rubric_compact}\n\n"
                 "Return a JSON object with fields: \n"
-                "criteria: [{criterion_id, score (1-4 int), label, evidence_quotes (1-2), justification (2-4 sentences)}],\n"
+                "criteria: [{criterion_id, score (1-4 int), label, evidence_quotes (0-2), justification (2-4 sentences)}],\n"
                 "summary_strengths (2-4 bullets), priority_revisions (2-4 bullets), confidence (0-100).\n"
                 "Calibrate strictness against the provided examples while grading only the current document.\n"
                 f"Additional grader instruction: {instruction}\n\n"
