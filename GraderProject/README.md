@@ -80,7 +80,7 @@ uvicorn main:app
 
 
 ## Example Essays
-Provided are example essays in diffrent formates that can be use in the project.
+Provided are example essays in different formats that can be used in the project.
 
 [Essays](https://github.com/CarlostheCorrea/GenAI/tree/main/GraderProject/ExampleEssays)
 
