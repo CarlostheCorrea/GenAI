@@ -8,7 +8,7 @@ Rubric Grader is a local FastAPI app with a built-in web UI for:
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.10+ (Python 3.11 or 3.12 recommended for easiest installs)
 - OpenAI API key
 
 ## Quick Start (3 Steps)
@@ -112,3 +112,7 @@ uvicorn main:app
   - Hard refresh (`Cmd+Shift+R` on macOS, `Ctrl+F5` on Windows).
 - Server restarts repeatedly in a loop:
   - Use stable mode without reload: `uvicorn main:app`
+- `Could not build wheels for grpcio` / `Could not find <Python.h>`:
+  - Delete and recreate the virtual environment, then reinstall:
+  - `rm -rf .venv && python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`
+  - If possible, use Python 3.11 or 3.12.
