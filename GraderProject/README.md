@@ -82,7 +82,7 @@ uvicorn main:app
 ## Example Essays
 Provided are example essays in diffrent formates that can be use in the project.
 
-(Essays)[]
+[Essays](https://github.com/CarlostheCorrea/GenAI/tree/main/GraderProject/ExampleEssays)
 
 
 
