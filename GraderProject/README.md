@@ -78,6 +78,14 @@ uvicorn main:app
    - `Generate Edits` for grammar/clarity suggestions.
    - `Ask` in `Follow-up Q&A` to ask questions about the paper or grading.
 
+
+## Example Essays
+Provided are example essays in diffrent formates that can be use in the project.
+
+(Essays)[]
+
+
+
 ## API Endpoints
 
 - `GET /rubrics`
