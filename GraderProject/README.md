@@ -78,13 +78,11 @@ uvicorn main:app
    - `Generate Edits` for grammar/clarity suggestions.
    - `Ask` in `Follow-up Q&A` to ask questions about the paper or grading.
 
-
 ## Example Essays
+
 Provided are example essays in different formats that can be used in the project.
 
 [Essays](https://github.com/CarlostheCorrea/GenAI/tree/main/GraderProject/ExampleEssays)
-
-
 
 ## API Endpoints
 
@@ -108,6 +106,17 @@ Provided are example essays in different formats that can be used in the project
 - Sessions are stored in memory; restarting the app clears sessions.
 - Calibration examples are loaded from `SampleEssays/` per rubric and used as internal scoring anchors.
 - The system does not request or return chain-of-thought.
+
+## Project Features
+
+- Model differentiation (`gpt-4o` vs `gpt-4o-mini`):
+  - Included via model routing logic in `services/model_router.py` (routes by estimated complexity/token load).
+- Reliability pattern(s):
+  - Chain-of-Thought (CoT): Included as internal-only reasoning for grading (`reasoning_mode="on"`), not exposed in outputs.
+  - Analogical Prompting: Included via rubric calibration examples from `SampleEssays/` injected into grading prompts.
+- Agent/orchestration framework:
+  - PydanticAI-style type-safe validation flow: Included and used in default grading path (`orchestrators/pydanticai_flow.py`).
+  - LangGraph state-machine flow: Also implemented (`orchestrators/langgraph_flow.py`), but default app usage is PydanticAI.
 
 ## Troubleshooting
 
