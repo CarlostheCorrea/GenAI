@@ -73,10 +73,22 @@ uvicorn main:app
    - Upload a `.txt`, `.pdf`, or `.docx` file and click `Extract Text From File`.
 2. Pick the rubric that best matches your assignment.
 3. Click `Create Session`.
+   
+<img width="1246" height="822" alt="Screenshot1" src="https://github.com/user-attachments/assets/6ff5d8c0-e66e-4928-9cd9-ddea87376241" />
+   
 4. Use one of the actions:
    - `Run Grading` to score the paper against the rubric.
+   
+<img width="1346" height="589" alt="Screenshot2" src="https://github.com/user-attachments/assets/14a30501-9df6-4b94-932c-aa05fa46326f" />
+
    - `Generate Edits` for grammar/clarity suggestions.
+
+<img width="1291" height="583" alt="Screenshot3" src="https://github.com/user-attachments/assets/9794302f-4642-48e7-83b6-2efe22ccdce4" />
+
    - `Ask` in `Follow-up Q&A` to ask questions about the paper or grading.
+
+<img width="1320" height="499" alt="Screenshot4" src="https://github.com/user-attachments/assets/0718a4ee-5bb7-47b5-8e1e-080e62ecf425" />
+
 
 ## Example Essays
 
