@@ -129,6 +129,52 @@ Provided are example essays in different formats that can be used in the project
   - Hard refresh (`Cmd+Shift+R` on macOS, `Ctrl+F5` on Windows).
 - Server restarts repeatedly in a loop:
   - Use stable mode without reload: `uvicorn main:app`
+
+## Architecture & Request Flow
+
+### High-level Architecture
+
+- `main.py`:
+  - FastAPI app, endpoint routing, startup initialization.
+- `frontend/`:
+  - Static web UI (`index.html`, `app.js`, `style.css`) served by FastAPI.
+- `schemas.py`:
+  - Request/response models and validation constraints.
+- `services/`:
+  - `rubric_loader.py`: loads/normalizes rubric JSON files.
+  - `calibration_loader.py`: loads rubric-specific sample essays for calibration.
+  - `llm_client.py`: model API calls.
+  - `prompt_builder.py`: builds grading/edit/follow-up prompts.
+  - `output_sanitizer.py`: quote and response constraint cleanup.
+  - `scoring.py`: deterministic backend score/letter computation.
+  - `model_router.py`: model selection logic (e.g., `gpt-4o` vs `gpt-4o-mini`).
+  - `session_store.py`: in-memory session storage.
+- `orchestrators/`:
+  - `pydanticai_flow.py`: default grading/edit/Q&A flow with type-safe output validation and repair fallback.
+  - `langgraph_flow.py`: state-machine alternative flow.
+
+### Runtime Flow
+
+1. Startup:
+   - Load rubrics from `FileJson/`.
+   - Load calibration examples from `SampleEssays/`.
+   - Initialize LLM client and orchestrators.
+2. Create session (`POST /sessions`):
+   - Validate input schema.
+   - Store text + selected rubric in memory.
+3. Grade (`POST /sessions/{id}/grade`):
+   - Build grading prompt with rubric + optional instruction + calibration examples.
+   - Route model and call LLM.
+   - Normalize evidence fields.
+   - Validate output against `TaskAGradingOutput`; if invalid, run repair call.
+   - Compute deterministic overall/category/letter scores in backend.
+4. Edit (`POST /sessions/{id}/edit`):
+   - Build edit prompt and return structured grammar/clarity edits.
+5. Follow-up Q&A (`POST /sessions/{id}/ask`):
+   - Build follow-up prompt with document + rubric + prior grading result.
+   - Validate response schema and enforce output constraints (e.g., requested sentence count).
+6. Frontend display:
+   - Render structured results for grading, edits, and Q&A.
 - `Could not build wheels for grpcio` / `Could not find <Python.h>`:
   - Delete and recreate the virtual environment, then reinstall:
   - `rm -rf .venv && python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`
